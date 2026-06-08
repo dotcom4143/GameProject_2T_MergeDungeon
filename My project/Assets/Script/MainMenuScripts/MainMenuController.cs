@@ -9,25 +9,27 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private RectTransform[] menuButtons; 
 
     [Header("위치 (X 좌표 기준)")]
-    [SerializeField] private float hideXPosition = 1200f;  // 화면 오른쪽 밖 (숨김 위치)
-    [SerializeField] private float showXPosition = 600f;   // 화면 안쪽 (정착 위치)
+    [SerializeField] private float hideXPosition = 1200f;  
+    [SerializeField] private float showXPosition = 600f;   
     
     [Header("버튼 이동 속도 및 시간")]
-    [SerializeField] private float slideSpeed = 8f;        // 버튼 나오는 속도
-    [SerializeField] private float delayBetweenButtons = 0.15f; // 버튼 간의 등장 시차 (초 단위)
+    [SerializeField] private float slideSpeed = 8f;        
+    [SerializeField] private float delayBetweenButtons = 0.15f; 
 
     [Header("버튼 이벤트 관련 시스템")]
     [SerializeField] private Button playButton;
     [SerializeField] private Button settingButton;
     [SerializeField] private Button quitButton;
 
-    private bool isMenuOpen = false;       // 현재 메뉴가 열려있는지 상태 체크
-    private bool isAnimating = false;      // 애니메이션이 작동 중일 때는 중복 클릭 방지
+    [Header("설정창 UI 시스템")]
+    [SerializeField] private GameObject settingsWindow;
+
+    private bool isMenuOpen = false;       
+    private bool isAnimating = false;      
     private Coroutine menuAnimationCoroutine;
 
     private void Start()
     {
-        // 초기 세팅은 모든 버튼을 화면 오른쪽 밖으로 밀어뒀습니다.
         foreach (RectTransform btn in menuButtons)
         {
             Vector2 pos = btn.anchoredPosition;
@@ -35,7 +37,11 @@ public class MainMenuController : MonoBehaviour
             btn.anchoredPosition = pos;
         }
 
-        // 버튼 리스너 연결
+        if (settingsWindow != null)
+        {
+            settingsWindow.SetActive(false);
+        }
+
         playButton.onClick.AddListener(OnPlayClicked);
         settingButton.onClick.AddListener(OnSettingClicked);
         quitButton.onClick.AddListener(OnQuitClicked);
@@ -43,11 +49,15 @@ public class MainMenuController : MonoBehaviour
 
     private void Update()
     {
-        //배경 클릭 시 토글 연출 (애니메이션 중이 아닐 때만 작동)
         if (!isAnimating && Input.GetMouseButtonDown(0))
         {
-            // 만약 UI 버튼 자체를 누른 거라면 이 클릭은 무시해야 함.
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+
+            if (settingsWindow != null && settingsWindow.activeSelf)
+            {
+                CloseSettings();
+                return;
+            }
 
             ToggleMenu();
         }
@@ -55,34 +65,27 @@ public class MainMenuController : MonoBehaviour
 
     private void ToggleMenu()
     {
-        isMenuOpen = !isMenuOpen; // 상태 뒤집기
+        isMenuOpen = !isMenuOpen; 
 
         if (menuAnimationCoroutine != null)
         {
             StopCoroutine(menuAnimationCoroutine);
         }
 
-        // 상태에 따라 들어오거나 나가는 코루틴
         menuAnimationCoroutine = StartCoroutine(AnimateMenu(isMenuOpen));
     }
 
     private IEnumerator AnimateMenu(bool open)
     {
         isAnimating = true;
-
-        // 목표 X 좌표 설정
         float targetX = open ? showXPosition : hideXPosition;
 
-        /*
-        등장할 때는 Play > Settings > Quit 순서로
-         퇴장할 때는 역순(Quit -> Settings -> Play)으로 나가면 연출이 훨씬 고급스럽습니다. 나중에 수정하면 반박 안받음ㅇㅇ
-         */
         if (open)
         {
             for (int i = 0; i < menuButtons.Length; i++)
             {
                 StartCoroutine(SmoothSlide(menuButtons[i], targetX));
-                yield return new WaitForSeconds(delayBetweenButtons); // 시차 주기
+                yield return new WaitForSeconds(delayBetweenButtons); 
             }
         }
         else
@@ -90,18 +93,16 @@ public class MainMenuController : MonoBehaviour
             for (int i = menuButtons.Length - 1; i >= 0; i--)
             {
                 StartCoroutine(SmoothSlide(menuButtons[i], targetX));
-                yield return new WaitForSeconds(delayBetweenButtons); // 시차 주기
+                yield return new WaitForSeconds(delayBetweenButtons); 
             }
         }
 
-        // 모든 버튼이 이동을 시작하고 마지막 시차까지 끝날 때까지 대기
         yield return new WaitForSeconds(0.3f); 
         isAnimating = false;
     }
 
     private IEnumerator SmoothSlide(RectTransform btn, float targetX)
     {
-        // Lerp를 이용해 각 개별 버튼의 X 좌표만 부드럽게 이동
         while (Mathf.Abs(btn.anchoredPosition.x - targetX) > 0.5f)
         {
             Vector2 pos = btn.anchoredPosition;
@@ -110,13 +111,11 @@ public class MainMenuController : MonoBehaviour
             yield return null;
         }
 
-        //최종 위치 강제 고정
         Vector2 finalPos = btn.anchoredPosition;
         finalPos.x = targetX;
         btn.anchoredPosition = finalPos;
     }
 
-    // --- 버튼 기능 구현부 --- (제발 절대 건드리지 말아야하는 스크립트)
     private void OnPlayClicked()
     {
         if (isAnimating || !isMenuOpen) return;
@@ -127,7 +126,12 @@ public class MainMenuController : MonoBehaviour
     private void OnSettingClicked()
     {
         if (isAnimating || !isMenuOpen) return;
-        Debug.Log("Open Settings Window");
+        
+        if (settingsWindow != null)
+        {
+            settingsWindow.SetActive(true);
+            Debug.Log("Open Settings Window Successfully");
+        }
     }
 
     private void OnQuitClicked()
@@ -135,5 +139,14 @@ public class MainMenuController : MonoBehaviour
         if (isAnimating || !isMenuOpen) return;
         Debug.Log("Quit Application");
         Application.Quit();
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsWindow != null)
+        {
+            settingsWindow.SetActive(false);
+            Debug.Log("Close Settings Window");
+        }
     }
 }

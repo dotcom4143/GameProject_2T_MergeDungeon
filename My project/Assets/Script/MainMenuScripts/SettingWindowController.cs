@@ -8,13 +8,20 @@ public class SettingWindowController : MonoBehaviour
     public GameObject videoPanel;
     public GameObject controlsPanel;
 
-    // 첫 시작 시 오디오 패널만 켜기
-    void Start()
+    [Header("우측 상단 X(닫기) 버튼")]
+    [SerializeField] private Button closeButton;
+
+    private void Start()
     {
         ShowAudioPanel();
+
+        if (closeButton != null)
+        {
+            closeButton.onClick.RemoveAllListeners();
+            closeButton.onClick.AddListener(CloseWindow);
+        }
     }
 
-    // AUDIO 버튼에 연결할 함수
     public void ShowAudioPanel()
     {
         audioPanel.SetActive(true);
@@ -22,7 +29,6 @@ public class SettingWindowController : MonoBehaviour
         controlsPanel.SetActive(false);
     }
 
-    // VIDEO 버튼에 연결할 함수
     public void ShowVideoPanel()
     {
         audioPanel.SetActive(false);
@@ -30,11 +36,15 @@ public class SettingWindowController : MonoBehaviour
         controlsPanel.SetActive(false);
     }
 
-    // CONTROLS 버튼에 연결할 함수
     public void ShowControlsPanel()
     {
         audioPanel.SetActive(false);
         videoPanel.SetActive(false);
         controlsPanel.SetActive(true);
+    }
+
+    public void CloseWindow()
+    {
+        this.gameObject.SetActive(false);
     }
 }
