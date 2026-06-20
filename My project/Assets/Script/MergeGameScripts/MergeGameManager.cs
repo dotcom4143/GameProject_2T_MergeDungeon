@@ -155,4 +155,22 @@ public class MergeGameManager : MonoBehaviour
 
     public void ToggleMergePanel() { if (mergePanel != null) mergePanel.SetActive(!mergePanel.activeSelf); }
     public bool MergePanelActive() { return mergePanel != null && mergePanel.activeSelf; }
+    
+    public bool TryConsumeMaterialsForWeapon(WeaponData weaponData)
+    {
+        for (int i = 1; i <= 4; i++)
+        {
+            if (storedMaterialCounts[i] < weaponData.requiredMaterialCounts[i])
+            {
+                return false;
+            }
+        }
+
+        for (int i = 1; i <= 4; i++)
+        {
+            storedMaterialCounts[i] -= weaponData.requiredMaterialCounts[i];
+        }
+
+        return true;
+    }
 }
