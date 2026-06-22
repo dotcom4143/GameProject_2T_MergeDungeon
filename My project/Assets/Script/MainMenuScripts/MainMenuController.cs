@@ -119,8 +119,8 @@ public class MainMenuController : MonoBehaviour
     private void OnPlayClicked()
     {
         if (isAnimating || !isMenuOpen) return;
-        Debug.Log("Dungeon Entrance - Loading BaseScene");
-        SceneManager.LoadScene("BaseScene");
+        Debug.Log("Dungeon Entrance - Loading TutorialScene");
+        SceneManager.LoadScene("TutorialScene");
     }
 
     private void OnSettingClicked()

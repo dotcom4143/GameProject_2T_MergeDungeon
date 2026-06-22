@@ -35,25 +35,24 @@ public class WeaponDetailPanel : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    // 제작하기 버튼에 연결할 함수
     public void OnClickCraft()
     {
         if (currentWeaponData == null) return;
 
-        MergeGameManager gameManager = Object.FindAnyObjectByType<MergeGameManager>();        
-        if (gameManager != null)
+        MergeGameManager gameManager = Object.FindAnyObjectByType<MergeGameManager>();
+        WeaponInventoryManager invManager = Object.FindAnyObjectByType<WeaponInventoryManager>();
+        
+        if (gameManager != null && invManager != null)
         {
-            if (gameManager.TryConsumeMaterialsForWeapon(currentWeaponData))
+            if (invManager.CanAddWeapon(currentWeaponData))
             {
-                Debug.Log($"{currentWeaponData.weaponName} 제작 성공! 가방에서 재료가 차감되었습니다.");
-            }
-            else
-            {
-                Debug.Log("재료가 부족하여 제작할 수 없습니다.");
+                if (gameManager.TryConsumeMaterialsForWeapon(currentWeaponData))
+                {
+                    invManager.TryAddWeapon(currentWeaponData);
+                }
             }
         }
     }
 
-    // 창 닫기 버튼
     public void ClosePanel() => gameObject.SetActive(false);
 }

@@ -59,11 +59,9 @@ public class MergeGameManager : MonoBehaviour
             if (mat != null)
             {
                 storedMaterialCounts[mat.materialLevel]++;
-                
                 Destroy(mat.gameObject);
             }
         }
-
         activeMaterials.Clear();
     }
 
@@ -162,6 +160,10 @@ public class MergeGameManager : MonoBehaviour
         {
             if (storedMaterialCounts[i] < weaponData.requiredMaterialCounts[i])
             {
+                if (CraftWarningManager.Instance != null)
+                {
+                    CraftWarningManager.Instance.ShowMaterialWarning();
+                }
                 return false;
             }
         }
@@ -170,7 +172,7 @@ public class MergeGameManager : MonoBehaviour
         {
             storedMaterialCounts[i] -= weaponData.requiredMaterialCounts[i];
         }
-
+        
         return true;
     }
 }
